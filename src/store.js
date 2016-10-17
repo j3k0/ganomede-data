@@ -3,7 +3,10 @@
 const crypto = require('crypto');
 
 class StoreInterface {
-  constructor () {}
+  constructor () {
+    if (this.constructor === StoreInterface)
+      throw new Error('NotImplemented');
+  }
 
   // callback(err, id)
   insert (doc, callback) { throw new Error('NotImplemented'); }

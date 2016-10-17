@@ -26,5 +26,10 @@ module.exports = {
       ? parseInt(process.env.PORT, 10)
       : 8000,
     prefix: `/${pkg.api}`
+  },
+
+  store: { // Any constructor from `./src/store.js` and its options.
+    klass: 'MemoryStore',
+    options: {}
   }
 };
