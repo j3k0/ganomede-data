@@ -11,6 +11,8 @@ describe('RedisStore', () => {
     prefix: 'data-test/v1'
   });
 
+  after(cb => store.redis.quit(cb));
+
   const missingId = 'missing';
   let docId;
 
