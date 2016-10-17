@@ -39,6 +39,23 @@ describe('docs-router', () => {
         });
     });
 
+    it('returns 400 on missing document', (done) => {
+      go()
+        .post(endpoint('/docs'))
+        .send({secret: config.secret})
+        .expect(400, done);
+    });
+
+    it('returns 400 on invalid document', (done) => {
+      go()
+        .post(endpoint('/docs'))
+        .send({
+          secret: config.secret,
+          document: null
+        })
+        .expect(400, done);
+    });
+
     it('requires API_SECRET', (done) => {
       go()
         .post(endpoint('/docs'))
@@ -76,6 +93,23 @@ describe('docs-router', () => {
           expect(store._store.get(docId)).to.eql(samples.replacementDoc);
           done();
         });
+    });
+
+    it('returns 400 on missing document', (done) => {
+      go()
+        .post(endpoint(`/docs/${docId}`))
+        .send({secret: config.secret})
+        .expect(400, done);
+    });
+
+    it('returns 400 on invalid document', (done) => {
+      go()
+        .post(endpoint(`/docs/${docId}`))
+        .send({
+          secret: config.secret,
+          document: null
+        })
+        .expect(400, done);
     });
 
     it('returns 404 on missing docs', (done) => {
