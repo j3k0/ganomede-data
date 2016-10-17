@@ -30,6 +30,8 @@
   },
   "dependencies": {
     "bunyan": "^1.8.1",
+    "node-uuid": "^1.4.7",
+    "redis": "^2.6.2",
     "restify": "^4.1.1"
   }
 }

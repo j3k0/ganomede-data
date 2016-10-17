@@ -29,7 +29,13 @@ module.exports = {
   },
 
   store: { // Any constructor from `./src/store.js` and its options.
-    klass: 'MemoryStore',
-    options: {}
+    klass: 'RedisStore',
+    options: {
+      // Specify `redis` for existing client, or any of the options from
+      // https://github.com/NodeRedis/node_redis#options-object-properties
+      host: process.env.REDIS_HOST || '127.0.0.1',
+      port: process.env.REDIS_PORT || 6379,
+      prefix: pkg.api + ':'
+    }
   }
 };

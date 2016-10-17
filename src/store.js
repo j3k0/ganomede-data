@@ -1,6 +1,9 @@
 'use strict';
 
-const crypto = require('crypto');
+const redis = require('redis');
+const uuid = require('node-uuid');
+
+const randomId = () => uuid.v4();
 
 class StoreInterface {
   constructor () {
@@ -28,7 +31,7 @@ class MemoryStore extends StoreInterface {
   }
 
   insert (doc, callback) {
-    const id = crypto.randomBytes(24).toString('hex');
+    const id = randomId();
     this._store.set(id, doc);
     setImmediate(callback, null, id);
   }
@@ -55,7 +58,78 @@ class MemoryStore extends StoreInterface {
   }
 }
 
+class RedisStore extends MemoryStore {
+
+  constructor (options = {}) {
+    super();
+    this.redis = options.redis || redis.createClient(options);
+    this.redisPrefix = options.prefix;
+
+    if (!this.redis)
+      throw new Error('Invalid options.redis');
+
+    if (!this.redisPrefix)
+      throw new Error('Invalid options.prefix');
+  }
+
+  insert (doc, callback) {
+    const id = randomId();
+    const value = JSON.stringify(doc);
+
+    this.redis.set(id, value, 'NX', (err, reply) => {
+      if (err)
+        return callback(err);
+
+      // Document was not created due to ID collision.
+      if (reply === null)
+        return callback(new Error('IdCollision'));
+
+      callback(null, id);
+    });
+  }
+
+  // Like fetch, but in serialized form.
+  fetchRaw (id, callback) {
+    this.redis.get(id, callback);
+  }
+
+  fetch (id, callback) {
+    this.fetchRaw(id, (err, raw) => {
+      if (err)
+        return callback(err);
+
+      const doc = (raw === null)
+        ? null
+        : JSON.parse(raw);
+
+      callback(null, doc);
+    });
+  }
+
+  replace (id, doc, callback) {
+    const value = JSON.stringify(doc);
+
+    this.redis.set(id, value, 'XX', (err, reply) => {
+      if (err)
+        return callback(err);
+
+      if (reply === null)
+        return callback(new Error('NotFound'));
+
+      callback(null);
+    });
+  }
+
+  delete (id, callback) {
+    this.redis.del(
+      id,
+      (err) => callback(err)
+    );
+  }
+}
+
 module.exports = {
   StoreInterface,
-  MemoryStore
+  MemoryStore,
+  RedisStore
 };

@@ -8,7 +8,9 @@ Environment variables:
 
 * `HOST` — interface to listen on (`'127.0.0.1'`);
 * `PORT` — port to listen on (`'127.0.0.1'`);
-* `API_SECRET` — non-empty string for authorizing non-read operations.
+* `API_SECRET` — non-empty string for authorizing non-read operations;
+* `REDIS_HOST` — hostname of Redis instance to store documents in;
+* `REDIS_PORT` — port of Redis instance to store documents in.
 
 ## API
 
