@@ -16,7 +16,7 @@ Environment variables:
 
 ### Create document `/data/v1/docs/ [POST]`
 
-Body
+#### Body
 
 ``` js
 { "secret": "API_SECRET",
@@ -24,30 +24,63 @@ Body
 }
 ```
 
-Response `[200 OK]`
-Response `[403 Forbidden]` — invalid secret.
+#### Response `[200 OK]`
 
 ``` js
 { "id": "idString" }  // ID of created document.
 ```
 
+#### Response `[403 Forbidden]`
+
+Invalid secret.
+
 ### Read document `/data/v1/docs/:id [GET]`
 
-Response `[200 OK]`
+#### Response `[200 OK]`
 
 ``` js
 { /*…*/ }  // Document itself as created (without id).
 ```
 
-Response `[404 Not Found]` — document with specified `:id` was not found.
+#### Response `[404 Not Found]`
+
+Document with specified `:id` was not found.
+
 
 ### Replace document `/data/v1/docs/:id [POST]`
 
-Response `[200 OK]` — document replaced.
-Response `[404 Not Found]` — document with specified `:id` was not found.
-Response `[403 Forbidden]` — invalid secret.
+#### Body
+
+``` js
+{ "secret": "API_SECRET" }
+```
+
+#### Response `[200 OK]`
+
+Document replaced.
+
+#### Response `[404 Not Found]`
+
+Document with specified `:id` was not found.
+
+#### Response `[403 Forbidden]`
+
+Invalid secret.
+
 
 ### Delete document `/data/v1/docs/:id [DELETE]`
 
-Response `[200 OK]` — document deleted or does not exist.
-Response `[403 Forbidden]` — invalid secret.
+#### Body
+
+``` js
+{ "secret": "API_SECRET" }
+```
+
+#### Response `[200 OK]`
+
+Document deleted or does not exist.
+
+#### Response `[403 Forbidden]`
+
+Invalid secret.
+
