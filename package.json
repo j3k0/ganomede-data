@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node index.js",
     "startw": "nodemon --watch src/ --watch index.js --watch config.js --exec \"npm start\"",
-    "test": "mocha --bail --no-exit --throw-deprecation tests/*.test.js",
+    "test": "API_SECRET=1 mocha --bail --no-exit --throw-deprecation tests/*.test.js",
     "testw": "nodemon --watch src/ --watch tests/ --watch config.js --exec \"npm test\"",
     "lint": "eslint src/ test/ index.js config.js"
   },
@@ -25,7 +25,8 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "eslint": "^3.8.0",
-    "mocha": "^3.1.2"
+    "mocha": "^3.1.2",
+    "supertest": "^2.0.0"
   },
   "dependencies": {
     "bunyan": "^1.8.1",
