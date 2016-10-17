@@ -1,9 +1,22 @@
 'use strict';
 
+const async = require('async');
 const redis = require('redis');
 const uuid = require('node-uuid');
+const zlib = require('zlib');
 
-const randomId = () => uuid.v4();
+const serialize = (obj, cb) => {
+  const buf = Buffer.from(JSON.stringify(obj), 'utf8');
+  zlib.gzip(buf, cb);
+};
+
+const deserialize = (buf, cb) => {
+  zlib.gunzip(buf, (err, json) => {
+    return err
+      ? cb(err)
+      : cb(null, JSON.parse(json));
+  });
+};
 
 class StoreInterface {
   constructor () {
@@ -12,13 +25,46 @@ class StoreInterface {
   }
 
   // callback(err, id)
-  insert (doc, callback) { throw new Error('NotImplemented'); }
+  _insert (id, data, callback) { throw new Error('NotImplemented'); }
+  insert (doc, callback) {
+    const id = uuid.v4();
+
+    async.waterfall([
+      (cb) => serialize(doc, cb),
+      (buf, cb) => this._insert(id, buf, cb)
+    ], (err) => {
+      return err
+        ? callback(err)
+        : callback(null, id);
+    });
+  }
+
+  // callback(err, serializedDoc || null)
+  fetchRaw (id, callback) {
+    throw new Error('NotImplemented');
+  }
 
   // callback(err, doc || null)
-  fetch (id, callback) { throw new Error('NotImplemented'); }
+  fetch (id, callback) {
+    this.fetchRaw(id, (err, buf) => {
+      if (err)
+        return callback(err);
+
+      if (buf === null)
+        return callback(null, null);
+
+      deserialize(buf, callback);
+    });
+  }
 
   // callback(err)
-  replace (id, doc, callback) { throw new Error('NotImplemented'); }
+  _replace (id, data, callback) { throw new Error('NotImplemented'); }
+  replace (id, doc, callback) {
+    async.waterfall([
+      (cb) => serialize(doc, cb),
+      (buf, cb) => this._replace(id, buf, cb)
+    ], (err) => callback(err));
+  }
 
   // callback(err)
   delete (id, callback) { throw new Error('NotImplemented'); }
@@ -30,21 +76,23 @@ class MemoryStore extends StoreInterface {
     this._store = new Map();
   }
 
-  insert (doc, callback) {
-    const id = randomId();
-    this._store.set(id, doc);
-    setImmediate(callback, null, id);
+  _insert (id, buf, callback) {
+    if (this._store.has(id))
+      return setImmediate(callback, new Error('IdCollision'));
+
+    this._store.set(id, buf);
+    setImmediate(callback, null);
   }
 
-  fetch (id, callback) {
-    const doc = this._store.has(id)
+  fetchRaw (id, callback) {
+    const buf = this._store.has(id)
       ? this._store.get(id)
       : null;
 
-    setImmediate(callback, null, doc);
+    setImmediate(callback, null, buf);
   }
 
-  replace (id, doc, callback) {
+  _replace (id, doc, callback) {
     if (!this._store.has(id))
       return setImmediate(callback, new Error('NotFound'));
 
@@ -59,7 +107,6 @@ class MemoryStore extends StoreInterface {
 }
 
 class RedisStore extends MemoryStore {
-
   constructor (options = {}) {
     super();
     this.redis = options.redis || redis.createClient(options);
@@ -72,11 +119,8 @@ class RedisStore extends MemoryStore {
       throw new Error('Invalid options.prefix');
   }
 
-  insert (doc, callback) {
-    const id = randomId();
-    const value = JSON.stringify(doc);
-
-    this.redis.set(id, value, 'NX', (err, reply) => {
+  _insert (id, buf, callback) {
+    this.redis.set(id, buf.toString('binary'), 'NX', (err, reply) => {
       if (err)
         return callback(err);
 
@@ -84,32 +128,26 @@ class RedisStore extends MemoryStore {
       if (reply === null)
         return callback(new Error('IdCollision'));
 
-      callback(null, id);
+      callback(null);
     });
   }
 
   // Like fetch, but in serialized form.
   fetchRaw (id, callback) {
-    this.redis.get(id, callback);
-  }
-
-  fetch (id, callback) {
-    this.fetchRaw(id, (err, raw) => {
+    this.redis.get(id, (err, reply) => {
       if (err)
         return callback(err);
 
-      const doc = (raw === null)
+      const buf = (reply === null)
         ? null
-        : JSON.parse(raw);
+        : Buffer.from(reply, 'binary');
 
-      callback(null, doc);
+      callback(null, buf);
     });
   }
 
-  replace (id, doc, callback) {
-    const value = JSON.stringify(doc);
-
-    this.redis.set(id, value, 'XX', (err, reply) => {
+  _replace (id, buf, callback) {
+    this.redis.set(id, buf.toString('binary'), 'XX', (err, reply) => {
       if (err)
         return callback(err);
 

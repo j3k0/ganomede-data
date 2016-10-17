@@ -57,14 +57,26 @@ module.exports = (prefix, server, options = {}) => {
 
   // Read document
   server.get(prefixedDocument, (req, res, next) => {
-    store.fetch(req.params.id, (err, doc) => {
+    const gzip = req.accepts('gzip');
+    const fn = gzip
+      ? store.fetchRaw
+      : store.fetch;
+
+    fn.call(store, req.params.id, (err, buf) => {
       if (err)
         return next(err);
 
-      if (!doc)
+      if (!buf)
         return next(new restify.NotFoundError());
 
-      res.json(doc);
+      if (gzip) {
+        res.header('Content-Type', 'application/json; charset=UTF-8');
+        res.header('Content-Encoding', 'gzip');
+        res.end(buf);
+      }
+      else {
+        res.json(buf);
+      }
     });
   });
 

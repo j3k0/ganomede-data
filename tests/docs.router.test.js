@@ -1,5 +1,6 @@
 'use strict';
 
+const zlib = require('zlib');
 const {expect} = require('chai');
 const supertest = require('supertest');
 const server = require('../src/server');
@@ -12,6 +13,9 @@ describe('docs-router', () => {
   const endpoint = (path) => config.http.prefix + path;
   const go = () => supertest(server);
   const store = new MemoryStore();
+  const storeGet = (id) => JSON.parse(
+    zlib.gunzipSync(store._store.get(id))
+  );
   let docId;
 
   before(cb => {
@@ -33,7 +37,7 @@ describe('docs-router', () => {
         .end((err, res) => {
           expect(err).to.be.null;
           expect(res.body.id).to.be.a('string');
-          expect(store._store.get(res.body.id)).to.eql(samples.doc);
+          expect(storeGet(res.body.id)).to.eql(samples.doc);
           docId = res.body.id;
           done();
         });
@@ -90,7 +94,7 @@ describe('docs-router', () => {
         .end((err, res) => {
           expect(err).to.be.null;
           expect(res.text).to.equal('');
-          expect(store._store.get(docId)).to.eql(samples.replacementDoc);
+          expect(storeGet(docId)).to.eql(samples.replacementDoc);
           done();
         });
     });

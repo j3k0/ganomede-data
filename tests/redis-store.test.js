@@ -1,14 +1,12 @@
 'use strict';
 
 const {expect} = require('chai');
-const redis = require('redis');
 const {RedisStore} = require('../src/store');
 const samples = require('./samples');
 
 describe('RedisStore', () => {
   const store = new RedisStore({
-    redis: redis.createClient(),
-    prefix: 'data-test/v1'
+    prefix: 'data-test/v1:'
   });
 
   after(cb => store.redis.quit(cb));
