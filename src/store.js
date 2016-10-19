@@ -61,6 +61,30 @@ class StoreInterface {
 
   // callback(err)
   delete (id, callback) { throw new Error('NotImplemented'); }
+
+  // callback(err, [string])
+  _ids (callback) { throw new Error('NotImplemented'); }
+  search (queryArg, callbackArg) {
+    let query = queryArg;
+    let callback = callbackArg;
+
+    if (arguments.length === 1) {
+      query = null;
+      callback = queryArg;
+    }
+
+    this._ids((err, ids) => {
+      if (err)
+        return callback(err);
+
+      callback(
+        null,
+        query
+          ? ids.filter(id => id.includes(query))
+          : ids
+      );
+    });
+  }
 }
 
 class MemoryStore extends StoreInterface {
@@ -97,9 +121,17 @@ class MemoryStore extends StoreInterface {
     this._store.delete(id);
     setImmediate(callback, null);
   }
+
+  _ids (callback) {
+    setImmediate(
+      callback,
+      null,
+      Array.from(this._store.keys())
+    );
+  }
 }
 
-class RedisStore extends MemoryStore {
+class RedisStore extends StoreInterface {
   constructor (options = {}) {
     super();
     this.redis = options.redis || redis.createClient(options);
@@ -156,6 +188,34 @@ class RedisStore extends MemoryStore {
       id,
       (err) => callback(err)
     );
+  }
+
+  search (queryArg, callbackArg) {
+    let query = queryArg;
+    let callback = callbackArg;
+
+    if (arguments.length === 1) {
+      query = '*';
+      callback = queryArg;
+    }
+
+    // Is Redis glob pattern or just substring.
+    const pattern = (-1 !== query.search(/[\?\*\[]/))
+      ? query
+      : `*${query}*`;
+
+    const prefixedPattern = (this.redisPrefix || '') + pattern;
+
+    this.redis.keys(prefixedPattern, (err, keys) => {
+      if (err)
+        return callback(err);
+
+      const ids = this.redisPrefix
+        ? keys.map(key => key.slice(this.redisPrefix.length))
+        : keys;
+
+      callback(null, ids);
+    });
   }
 }
 

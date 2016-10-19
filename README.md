@@ -36,6 +36,20 @@ Environment variables:
 
 Invalid secret.
 
+### List or Search Documents' IDs `/data/v1/docs [GET]`
+
+List IDs of all documents, or specify `q` query string parameter to filter only matching set (substring or [redis glob](http://redis.io/commands/keys)).
+
+#### Response `[200 OK]`
+
+``` js
+[
+  "matchin-id",
+  "another-matching-id",
+  // …
+]
+```
+
 ### Read document `/data/v1/docs/:id [GET]`
 
 #### Response `[200 OK]`

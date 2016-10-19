@@ -9,6 +9,7 @@ describe('RedisStore', () => {
     prefix: 'data-test/v1:'
   });
 
+  before(cb => store.redis.flushdb(cb));
   after(cb => store.redis.quit(cb));
 
   const missingId = 'missing';
@@ -36,6 +37,32 @@ describe('RedisStore', () => {
       store.fetch(missingId, (err, doc) => {
         expect(err).to.be.null;
         expect(doc).to.be.null;
+        done();
+      });
+    });
+  });
+
+  describe('#search()', () => {
+    it('returns all IDs if no query is specified', (done) => {
+      store.search((err, ids) => {
+        expect(err).to.be.null;
+        expect(ids).to.eql([docId]);
+        done();
+      });
+    });
+
+    it('searches with substring', (done) => {
+      store.search(' ', (err, ids) => {
+        expect(err).to.be.null;
+        expect(ids).to.eql([]);
+        done();
+      });
+    });
+
+    it('searches with redis globs', (done) => {
+      store.search('the-??', (err, ids) => {
+        expect(err).to.be.null;
+        expect(ids).to.eql([docId]);
         done();
       });
     });

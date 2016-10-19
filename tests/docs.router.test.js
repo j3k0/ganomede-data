@@ -95,6 +95,21 @@ describe('docs-router', () => {
     });
   });
 
+  describe('GET /docs', () => {
+    it('returns list of all document IDs', (done) => {
+      go()
+        .get(endpoint('/docs'))
+        .expect(200, Array.from(store._store.keys()), done);
+    });
+
+    it('query string allows to specify search patterns ', (done) => {
+      go()
+        .get(endpoint('/docs'))
+        .query({q: 'doc'})
+        .expect(200, ['the-doc'], done);
+    });
+  });
+
   describe('GET /docs/:id', () => {
     it('retreives documents', (done) => {
       go()

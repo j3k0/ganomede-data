@@ -67,6 +67,23 @@ module.exports = (prefix, server, options = {}) => {
     }
   );
 
+  // List/Search IDs
+  server.get(prefixedRoot, (req, res, next) => {
+    const hasQuery = Object.hasOwnProperty.call(req.query, 'q')
+      && (typeof req.query.q === 'string')
+      && (req.query.q.length > 0);
+
+    const search = hasQuery
+      ? store.search.bind(store, req.query.q)
+      : store.search.bind(store);
+
+    search((err, ids) => {
+      return err
+        ? next(err)
+        : res.json(ids);
+    });
+  });
+
   // Read document
   server.get(prefixedDocument, (req, res, next) => {
     const gzip = req.accepts('gzip');
