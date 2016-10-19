@@ -21,6 +21,8 @@ Environment variables:
 ``` js
 { "secret": "API_SECRET",
   "document": {/*…*/}      // JSON to insert.
+  "id": "idString"         // Optional ID to insert document with
+                           // (if missing, newly created UUID v4 is used).
 }
 ```
 
@@ -45,7 +47,6 @@ Invalid secret.
 #### Response `[404 Not Found]`
 
 Document with specified `:id` was not found.
-
 
 ### Replace document `/data/v1/docs/:id [POST]`
 

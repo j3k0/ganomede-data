@@ -1,6 +1,7 @@
 'use strict';
 
 const restify = require('restify');
+const uuid = require('node-uuid');
 const config = require('../config');
 const {StoreInterface} = require('./store');
 
@@ -46,7 +47,18 @@ module.exports = (prefix, server, options = {}) => {
     validateSecret,
     validateDocument,
     (req, res, next) => {
-      store.insert(req.body.document, (err, id) => {
+      const hasCustomId = Object.hasOwnProperty.call(req.body, 'id');
+      const customIdOk = (typeof req.body.id === 'string')
+        && (req.body.id.length > 0);
+
+      if (hasCustomId && !customIdOk)
+        return next(new restify.BadRequestError('InvalidId'));
+
+      const id = (hasCustomId && customIdOk)
+        ? req.body.id
+        : uuid.v4();
+
+      store.insert(id, req.body.document, (err) => {
         if (err)
           return next(err);
 

@@ -12,14 +12,12 @@ describe('RedisStore', () => {
   after(cb => store.redis.quit(cb));
 
   const missingId = 'missing';
-  let docId;
+  const docId = 'the-id';
 
   describe('#insert()', () => {
     it('inserts docs', (done) => {
-      store.insert(samples.doc, (err, id) => {
+      store.insert(docId, samples.doc, (err) => {
         expect(err).to.be.null;
-        expect(id).to.be.ok;
-        docId = id;
         done();
       });
     });

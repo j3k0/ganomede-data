@@ -43,6 +43,22 @@ describe('docs-router', () => {
         });
     });
 
+    it('allows creation of documents with particular ID', (done) => {
+      go()
+        .post(endpoint('/docs'))
+        .send({
+          secret: config.secret,
+          document: samples.doc,
+          id: 'the-doc'
+        })
+        .expect(201, {id: 'the-doc'})
+        .end((err, res) => {
+          expect(err).to.be.null;
+          expect(storeGet('the-doc')).to.eql(samples.doc);
+          done();
+        });
+    });
+
     it('returns 400 on missing document', (done) => {
       go()
         .post(endpoint('/docs'))
@@ -56,6 +72,17 @@ describe('docs-router', () => {
         .send({
           secret: config.secret,
           document: null
+        })
+        .expect(400, done);
+    });
+
+    it('returns 400 in invalid custom id', (done) => {
+      go()
+        .post(endpoint('/docs'))
+        .send({
+          secret: config.secret,
+          document: samples.doc,
+          id: {something: 'unexpected', happened: true}
         })
         .expect(400, done);
     });

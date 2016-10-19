@@ -2,7 +2,6 @@
 
 const async = require('async');
 const redis = require('redis');
-const uuid = require('node-uuid');
 const zlib = require('zlib');
 
 const serialize = (obj, cb) => {
@@ -26,17 +25,11 @@ class StoreInterface {
 
   // callback(err, id)
   _insert (id, data, callback) { throw new Error('NotImplemented'); }
-  insert (doc, callback) {
-    const id = uuid.v4();
-
+  insert (id, doc, callback) {
     async.waterfall([
       (cb) => serialize(doc, cb),
       (buf, cb) => this._insert(id, buf, cb)
-    ], (err) => {
-      return err
-        ? callback(err)
-        : callback(null, id);
-    });
+    ], callback);
   }
 
   // callback(err, serializedDoc || null)
