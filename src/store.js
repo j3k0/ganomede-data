@@ -85,6 +85,9 @@ class StoreInterface {
       );
     });
   }
+
+  // Cleanly close all connections.
+  quit (callback) { throw new Error('NotImplemented'); }
 }
 
 class MemoryStore extends StoreInterface {
@@ -216,6 +219,10 @@ class RedisStore extends StoreInterface {
 
       callback(null, ids);
     });
+  }
+
+  quit (callback) {
+    this.redis.quit(callback);
   }
 }
 
