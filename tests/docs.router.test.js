@@ -3,13 +3,14 @@
 const zlib = require('zlib');
 const {expect} = require('chai');
 const supertest = require('supertest');
-const server = require('../src/server');
+const createServer = require('../src/server');
 const docs = require('../src/docs.router');
 const config = require('../config');
 const {MemoryStore} = require('../src/store');
 const samples = require('./samples');
 
 describe('docs-router', () => {
+  const server = createServer();
   const endpoint = (path) => config.http.prefix + path;
   const go = () => supertest(server);
   const store = new MemoryStore();

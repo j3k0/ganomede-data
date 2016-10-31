@@ -2,9 +2,11 @@
 
 const restify = require('restify');
 
-const server = restify.createServer();
+module.exports = () => {
+  const server = restify.createServer();
 
-server.use(restify.queryParser());
-server.use(restify.bodyParser());
+  server.use(restify.queryParser());
+  server.use(restify.bodyParser());
 
-module.exports = server;
+  return server;
+};
