@@ -20,6 +20,6 @@ RUN chown -R app /home/app
 USER app
 
 WORKDIR /home/app/code
-CMD node index.js | bunyan
+CMD node index.js
 
 ENV NODE_ENV=production
