@@ -1,0 +1,17 @@
+app:
+    build: .
+    volumes:
+      - ./src:/home/app/code/src
+    command: node index.js
+    ports:
+      - "8000:8000"
+    links:
+      - redis:redis
+    environment:
+      - NODE_ENV=production
+      - API_SECRET=1
+
+redis:
+    image: tutum/redis:latest
+    environment:
+      - REDIS_PASS=**None**
