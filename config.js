@@ -33,8 +33,8 @@ module.exports = {
     options: {
       // Specify `redis` for existing client, or any of the options from
       // https://github.com/NodeRedis/node_redis#options-object-properties
-      host: process.env.REDIS_PORT_6379_TCP_ADDR || '127.0.0.1',
-      port: parseInt(process.env.REDIS_PORT_6379_TCP_PORT, 10) || 6379,
+      host: process.env.REDIS_DATA_PORT_6379_TCP_ADDR || '127.0.0.1',
+      port: parseInt(process.env.REDIS_DATA_PORT_6379_TCP_PORT, 10) || 6379,
       prefix: pkg.api + ':'
     }
   }
