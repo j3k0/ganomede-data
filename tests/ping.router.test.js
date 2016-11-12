@@ -26,6 +26,6 @@ describe('ping-router', () => {
   it('HEAD /ping/:token', (done) => {
     go()
       .head(url)
-      .expect(200, '', done);
+      .expect(200, done);
   });
 });
