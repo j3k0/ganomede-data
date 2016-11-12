@@ -21,7 +21,7 @@ module.exports = {
   }.call()),
 
   http: {
-    host: process.env.HOST || '127.0.0.1',
+    host: process.env.HOST || '0.0.0.0',
     port: process.env.hasOwnProperty('PORT')
       ? parseInt(process.env.PORT, 10)
       : 8000,

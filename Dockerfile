@@ -1,20 +1,25 @@
-FROM node:7
+FROM node:6
+
 EXPOSE 8000
 MAINTAINER Jean-Christophe Hoelt <hoelt@fovea.cc>
+
+# Create 'app' user
 RUN useradd app -d /home/app
 WORKDIR /home/app/code
+
+# Install NPM packages
 COPY package.json /home/app/code/package.json
 RUN chown -R app /home/app
-ENV NODE_ENV=production
-USER app
 RUN npm install --production
 
+# Copy app source files
 COPY index.js config.js /home/app/code/
 COPY src /home/app/code/src
-
-USER root
 RUN chown -R app /home/app
 
-WORKDIR /home/app/code
 USER app
+
+WORKDIR /home/app/code
 CMD node index.js | bunyan
+
+ENV NODE_ENV=production

@@ -2,7 +2,7 @@ app:
     build: .
     volumes:
       - ./src:/home/app/code/src
-    command: node index.js | bunyan
+    command: node index.js
     ports:
       - "8000:8000"
     links:
