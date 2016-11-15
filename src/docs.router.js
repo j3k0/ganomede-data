@@ -2,6 +2,7 @@
 
 const restify = require('restify');
 const uuid = require('node-uuid');
+const lodash = require('lodash');
 const config = require('../config');
 const {StoreInterface} = require('./store');
 
@@ -33,13 +34,55 @@ const validateDocument = (req, res, next) => {
     : next(new restify.BadRequestError('InvalidDocument'));
 };
 
+const validateDocuments = (req, res, next) => {
+  if (!req.body)
+    return next(new restify.BadRequestError('MissingBody'));
+
+  const docsOk = Object.hasOwnProperty.call(req.body, 'documents')
+    && req.body.documents
+    && (typeof req.body.documents === 'object')
+    && (Object.keys(req.body.documents).length > 0);
+
+  if (!docsOk)
+    return next(new restify.BadRequestError('MissingDocuments'));
+
+  const everyDocOk = lodash.every(req.body.documents, (doc, id) => (
+    id && (typeof id === 'string') && (id.length > 0) &&
+    doc && (typeof doc === 'object')
+  ));
+
+  return everyDocOk
+    ? next()
+    : next(new restify.BadRequestError('InvalidDocument'));
+};
+
 module.exports = (prefix, server, options = {}) => {
   const prefixedRoot = `${prefix}/docs`;
+  const prefixedBulk = `${prefix}/docs/_bulk_upsert`;
   const prefixedDocument = `${prefix}/docs/:id`;
 
   const store = options.store;
   if (!(store instanceof StoreInterface))
     throw new Error('Invalid options.store');
+
+  // Upsert multiple docs
+  // (must be before create document endpoint)
+  server.post(
+    prefixedBulk,
+    validateSecret,
+    validateDocuments,
+    (req, res, next) => {
+      const docs = req.body.documents;
+      const ids = Object.keys(docs);
+
+      store.bulkUpsert(docs, (err) => {
+        if (err)
+          return next(err);
+
+        res.json(201, ids);
+      });
+    }
+  );
 
   // Create document
   server.post(

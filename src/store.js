@@ -32,6 +32,19 @@ class StoreInterface {
     ], callback);
   }
 
+  // callback(err)
+  _bulkUpsert (idToDataHash, callback) { throw new Error('NotImplemented'); }
+  bulkUpsert (idToDocHash, callback) {
+    async.waterfall([
+      async.mapValues.bind(
+        async,
+        idToDocHash,
+        (val, key, cb) => serialize(val, cb)
+      ),
+      this._bulkUpsert.bind(this)
+    ], callback);
+  }
+
   // callback(err, serializedDoc || null)
   fetchRaw (id, callback) {
     throw new Error('NotImplemented');
@@ -93,6 +106,14 @@ class RedisStore extends StoreInterface {
 
       callback(null);
     });
+  }
+
+  _bulkUpsert (idsToBuf, callback) {
+    const multi = this.redis.multi();
+    Object.keys(idsToBuf).forEach(id => multi.set(
+      id, idsToBuf[id].toString('binary')
+    ));
+    multi.exec((err, replies) => callback(err));
   }
 
   // Like fetch, but in serialized form.

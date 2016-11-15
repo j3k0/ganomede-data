@@ -101,6 +101,58 @@ describe('docs-router', () => {
     });
   });
 
+  describe('POST /docs/_bulk_upsert', () => {
+    it('upserts multiple docs', (done) => {
+      td.when(store.bulkUpsert(
+          samples.bulkUpsertDocs,
+          td.callback
+        ))
+        .thenCallback(null);
+
+      go()
+        .post(endpoint('/docs/_bulk_upsert'))
+        .send({
+          secret: config.secret,
+          documents: samples.bulkUpsertDocs
+        })
+        .expect(201, done);
+    });
+
+    it('returns 400 on missing documents field', (done) => {
+      go()
+        .post(endpoint('/docs/_bulk_upsert'))
+        .send({secret: config.secret})
+        .expect(400, done);
+    });
+
+    it('returns 400 on invalid documents field', (done) => {
+      go()
+        .post(endpoint('/docs/_bulk_upsert'))
+        .send({
+          secret: config.secret,
+          documents: null
+        })
+        .expect(400, done);
+    });
+
+    it('returns 400 on missing documents', (done) => {
+      go()
+        .post(endpoint('/docs/_bulk_upsert'))
+        .send({
+          secret: config.secret,
+          documents: []
+        })
+        .expect(400, done);
+    });
+
+    it('requires API_SECRET', (done) => {
+      go()
+        .post(endpoint('/docs/_bulk_upsert'))
+        .send({})
+        .expect(403, done);
+    });
+  });
+
   describe('GET /docs', () => {
     it('returns list of all document IDs', (done) => {
       const allTheKeys = ['all', 'the', 'keys'];
