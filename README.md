@@ -36,6 +36,39 @@ Environment variables:
 
 Invalid secret.
 
+### Create or update multiple documents `/data/v1/docs/_bulk_upsert [POST]`
+
+Creates multiple documents, existing documents are overwritten.
+This is transactional — either all upserts will succeed, or none of them.
+
+#### Body
+
+``` js
+{ "secret": "API_SECRET",
+  // Pass in an object, where keys are ids and values are documents:
+  "documents": {
+    "key-1": {"a": {"body": "for key-1"}}, // JSON to upsert at `key-1`
+    "key-1": {"something": "else"},        // JSON to upsert at `key-2`
+    /* … */
+  }
+}
+```
+
+#### Response `[200 OK]`
+
+Array of IDs.
+
+``` js
+[ "key-1",
+  "key-2",
+  /* … */
+]
+```
+
+#### Response `[403 Forbidden]`
+
+Invalid secret.
+
 ### List or Search Documents' IDs `/data/v1/docs [GET]`
 
 List IDs of all documents, or specify `q` query string parameter to filter only matching set (substring or [redis glob](http://redis.io/commands/keys)).
