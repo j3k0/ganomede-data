@@ -34,6 +34,7 @@
     "curtain-down": "^1.0.0",
     "node-uuid": "^1.4.7",
     "redis": "^2.6.2",
-    "restify": "^4.1.1"
+    "restify": "^4.1.1",
+    "testdouble": "^1.9.0"
   }
 }

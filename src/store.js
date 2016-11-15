@@ -23,7 +23,7 @@ class StoreInterface {
       throw new Error('NotImplemented');
   }
 
-  // callback(err, id)
+  // callback(err)
   _insert (id, data, callback) { throw new Error('NotImplemented'); }
   insert (id, doc, callback) {
     async.waterfall([
@@ -63,75 +63,10 @@ class StoreInterface {
   delete (id, callback) { throw new Error('NotImplemented'); }
 
   // callback(err, [string])
-  _ids (callback) { throw new Error('NotImplemented'); }
-  search (queryArg, callbackArg) {
-    let query = queryArg;
-    let callback = callbackArg;
-
-    if (arguments.length === 1) {
-      query = null;
-      callback = queryArg;
-    }
-
-    this._ids((err, ids) => {
-      if (err)
-        return callback(err);
-
-      callback(
-        null,
-        query
-          ? ids.filter(id => id.includes(query))
-          : ids
-      );
-    });
-  }
+  search () { throw new Error('NotImplemented'); }
 
   // Cleanly close all connections.
   quit (callback) { throw new Error('NotImplemented'); }
-}
-
-class MemoryStore extends StoreInterface {
-  constructor () {
-    super();
-    this._store = new Map();
-  }
-
-  _insert (id, buf, callback) {
-    if (this._store.has(id))
-      return setImmediate(callback, new Error('IdCollision'));
-
-    this._store.set(id, buf);
-    setImmediate(callback, null);
-  }
-
-  fetchRaw (id, callback) {
-    const buf = this._store.has(id)
-      ? this._store.get(id)
-      : null;
-
-    setImmediate(callback, null, buf);
-  }
-
-  _replace (id, doc, callback) {
-    if (!this._store.has(id))
-      return setImmediate(callback, new Error('NotFound'));
-
-    this._store.set(id, doc);
-    setImmediate(callback, null);
-  }
-
-  delete (id, callback) {
-    this._store.delete(id);
-    setImmediate(callback, null);
-  }
-
-  _ids (callback) {
-    setImmediate(
-      callback,
-      null,
-      Array.from(this._store.keys())
-    );
-  }
 }
 
 class RedisStore extends StoreInterface {
@@ -228,6 +163,5 @@ class RedisStore extends StoreInterface {
 
 module.exports = {
   StoreInterface,
-  MemoryStore,
   RedisStore
 };

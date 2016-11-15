@@ -86,7 +86,7 @@ module.exports = (prefix, server, options = {}) => {
 
   // Read document
   server.get(prefixedDocument, (req, res, next) => {
-    const gzip = req.accepts('gzip');
+    const gzip = req.acceptsEncoding('gzip');
     const fn = gzip
       ? store.fetchRaw
       : store.fetch;
