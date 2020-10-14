@@ -1,4 +1,4 @@
-FROM node:6
+FROM node:12
 
 EXPOSE 8000
 MAINTAINER Jean-Christophe Hoelt <hoelt@fovea.cc>
@@ -9,6 +9,7 @@ WORKDIR /home/app/code
 
 # Install NPM packages
 COPY package.json /home/app/code/package.json
+COPY package-lock.json /home/app/code/package-lock.json
 RUN chown -R app /home/app
 RUN npm install --production
 
