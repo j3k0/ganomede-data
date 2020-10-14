@@ -1,6 +1,6 @@
 {
   "name": "ganomede-data",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "api": "data/v1",
   "description": "Expose public data",
   "main": "index.js",
