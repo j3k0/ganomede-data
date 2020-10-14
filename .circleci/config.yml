@@ -1,0 +1,27 @@
+---
+jobs:
+  build:
+    docker:
+      - image: circleci/node:12
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+        # start redis
+      - run: sudo apt update
+      - run: sudo apt install redis-server
+      - run: sudo service redis-server start
+
+        # install deps
+      - run: npm i
+
+        # test
+      - run: npm run lint
+      - run: npm run test
+
+workflows:
+  version: 2
+  build_deploy:
+    jobs:
+      - build

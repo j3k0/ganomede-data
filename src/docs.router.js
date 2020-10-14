@@ -80,6 +80,7 @@ module.exports = (prefix, server, options = {}) => {
           return next(err);
 
         res.json(201, ids);
+        next();
       });
     }
   );
@@ -106,6 +107,7 @@ module.exports = (prefix, server, options = {}) => {
           return next(err);
 
         res.json(201, {id});
+        next();
       });
     }
   );
@@ -121,9 +123,11 @@ module.exports = (prefix, server, options = {}) => {
       : store.search.bind(store);
 
     search((err, ids) => {
-      return err
-        ? next(err)
-        : res.json(ids);
+      if (err)
+        return next(err);
+
+      res.json(ids);
+      next();
     });
   });
 
@@ -149,6 +153,8 @@ module.exports = (prefix, server, options = {}) => {
       else {
         res.json(buf);
       }
+
+      next();
     });
   });
 
@@ -159,22 +165,27 @@ module.exports = (prefix, server, options = {}) => {
     validateDocument,
     (req, res, next) => {
       store.replace(req.params.id, req.body.document, (err) => {
-        if (err) {
-          return (err.message === 'NotFound')
-            ? res.send(404)
-            : next(err);
+        if (err && (err.message === 'NotFound')) {
+          res.send(404);
+          return next();
+        }
+        else if (err) {
+          return next(err);
         }
 
         res.send(200);
+        next();
       });
     }
   );
 
   server.del(prefixedDocument, validateSecret, (req, res, next) => {
     store.delete(req.params.id, (err) => {
-      return err
-        ? next(err)
-        : res.send(200);
+      if (err)
+        return next(err);
+
+      res.send(200);
+      next();
     });
   });
 };
